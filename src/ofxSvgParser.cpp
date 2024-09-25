@@ -1166,10 +1166,16 @@ void Parser::_applyStyleToPath( ofXml& tnode, std::shared_ptr<Path> aSvgPath ) {
 //--------------------------------------------------------------
 void Parser::_applyStyleToPath( CssClass& aclass, std::shared_ptr<Path> aSvgPath ) {
 	// now lets figure out if there is any css applied //
-	if( !aclass.isNone("fill")) {
-		aSvgPath->path.setFillColor(aclass.getColor("fill"));
+	
+	if( aclass.hasProperty("fill")) {
+		if( !aclass.isNone("fill")) {
+			aSvgPath->path.setFillColor(aclass.getColor("fill"));
+		} else {
+			aSvgPath->path.setFilled(false);
+		}
 	} else {
-		aSvgPath->path.setFilled(false);
+//		aSvgPath->path.setFilled(false);
+		aSvgPath->path.setFillColor(ofColor(0));
 	}
 	
 	if( !aclass.isNone("stroke") ) {
