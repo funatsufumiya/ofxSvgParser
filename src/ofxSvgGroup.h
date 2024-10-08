@@ -41,6 +41,7 @@ public:
 		}
 		
 		if( !elementsToSearch.size() && mChildren.size() ) {
+			ofLogNotice("ofx::svg::Group") << __FUNCTION__ << " did not find group with name: " << aPathToGroup;
 			elementsToSearch = mChildren;
 		}
 		

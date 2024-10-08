@@ -50,7 +50,7 @@ public:
 	
 	
 	// will log messages to this module name
-	static const std::string moduleName() { return "ofx::svg2"; }
+	static const std::string moduleName() { return "ofx::svg::Element"; }
 		
 	glm::vec2 pos = glm::vec2(0.f, 0.f);
 	glm::vec2 scale = glm::vec2(1.0f, 1.0f);
