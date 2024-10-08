@@ -7,6 +7,9 @@ The goal of this addon is to load and parse svg files while maintaining the stru
 Helpful for layout and placement of interactive elements or storing path information. 
 The focus of this addon is placement and file structure; not rendering. So clipping, gradients and other rasterization implementations are not supported. 
 
+![Screenshot 2024-10-07 at 10 22 41 PM](https://github.com/user-attachments/assets/cfdd4f28-a468-42a4-8c51-b4c7fbc57c09)
+
+
 Grab a group by passing in the name of the group. <br/>
 `shared_ptr<ofxSvgGroup> logoGroup = svg.get<ofxSvgGroup>("logo");`
 
