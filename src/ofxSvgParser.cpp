@@ -800,16 +800,22 @@ void Parser::_parsePath( ofXml& tnode, std::shared_ptr<Path> aSvgPath ) {
 		} else if( cchar == 'v' || cchar == 'V' ) {
 			if( cchar == 'v' ) {
 				bRelative = true;
+				npositions[0].x = 0.f;
+			} else {
+				npositions[0].x = currentPos.x;
 			}
-			npositions[0].x = 0.f;
+			
 			npositions[0].y = ofToFloat(currentString);
 			ctype = ofPath::Command::lineTo;
 		} else if( cchar == 'H' || cchar == 'h' ) {
 			if( cchar == 'h' ) {
 				bRelative = true;
+				npositions[0].y = 0.f;
+			} else {
+				npositions[0].y = currentPos.y;
 			}
 			npositions[0].x = ofToFloat(currentString);
-			npositions[0].y = 0.f;
+			
 			ctype = ofPath::Command::lineTo;
 		} else if( cchar == 'L' || cchar == 'l' ) {
 			if( cchar == 'l' ) {
@@ -855,6 +861,11 @@ void Parser::_parsePath( ofXml& tnode, std::shared_ptr<Path> aSvgPath ) {
 		}
 		
 		if( ctype.has_value() ) {
+			
+//			for( auto& np : npositions ) {
+//				ofLogNotice(moduleName()) << cchar << " position: " << np;
+//			}
+			
 			auto prevPos = currentPos;
 			
 			auto commandT = ctype.value();
@@ -890,6 +901,7 @@ void Parser::_parsePath( ofXml& tnode, std::shared_ptr<Path> aSvgPath ) {
 			if( commandT == ofPath::Command::moveTo ) {
 				aSvgPath->path.moveTo(npositions[0]);
 			} else if( commandT == ofPath::Command::lineTo ) {
+//				ofLogNotice("ofxSvgParser") << "line to: " << npositions[0] << " current Pos: " << currentPos;
 				aSvgPath->path.lineTo(npositions[0]);
 			} else if( commandT == ofPath::Command::close ) {
 				aSvgPath->path.close();
@@ -1308,28 +1320,55 @@ bool Parser::getTransformFromSvgMatrix( string aStr, glm::vec2& apos, float& sca
 		vector<float> matrixF;
 		for(std::size_t i = 0; i < matrixNum.size(); i++){
 			matrixF.push_back(ofToFloat(matrixNum[i]));
-			//cout << " matrix[" << i << "] = " << matrixF[i] << " string version is " << matrixNum[i] << endl;
+//			std::cout << " matrix[" << i << "] = " << matrixF[i] << " string version is " << matrixNum[i] << std::endl;
 		}
 		
 		if( matrixNum.size() == 6 ) {
 			
-			apos.x = matrixF[4];
-			apos.y = matrixF[5];
 			
-			scaleX = std::sqrtf(matrixF[0] * matrixF[0] + matrixF[1] * matrixF[1]) * (float)ofSign(matrixF[0]);
-			scaleY = std::sqrtf(matrixF[2] * matrixF[2] + matrixF[3] * matrixF[3]) * (float)ofSign(matrixF[3]);
+			mat = glm::translate(glm::mat4(1.0f), glm::vec3(matrixF[4], matrixF[5], 0.0f));
 			
-			arotation = glm::degrees( std::atan2f(matrixF[2],matrixF[3]) );
-			if( scaleX < 0 && scaleY < 0 ){
-				
-			}else{
-				arotation *= -1.0f;
+			
+			arotation = glm::degrees( std::atan2f(matrixF[1],matrixF[0]) );
+			if( arotation != 0.f ) {
+				mat = mat * glm::toMat4((const glm::quat&)glm::angleAxis(glm::radians(arotation), glm::vec3(0.f, 0.f, 1.f)));
 			}
-			//        cout << " rotation is " << arotation << endl;
 			
-			return true;
+			scaleX = std::sqrtf(matrixF[0] * matrixF[0] + matrixF[1] * matrixF[1]);
+			scaleY = std::sqrtf(matrixF[2] * matrixF[2] + matrixF[3] * matrixF[3]);
+			
+			mat = glm::scale(mat, glm::vec3(scaleX, scaleY, 1.f));
+			
+			pos3 = mat * glm::vec4( apos.x, apos.y, 0.0f, 1.f );
+			
+			
+//			std::cout << "incoming pos " << apos << " out going pos: " << pos3 << std::endl;
+//			std::cout << "matrix rotation is " << arotation << " ScaleX: " << scaleX << " scaleY: " << scaleY << " apos: " << apos << std::endl;
+			
+			apos.x = pos3.x;
+			apos.y = pos3.y;
+			
+//			apos.x = matrixF[4];
+//			apos.y = matrixF[5];
+//			
+//			scaleX = std::sqrtf(matrixF[0] * matrixF[0] + matrixF[1] * matrixF[1]) * (float)ofSign(matrixF[0]);
+//			scaleY = std::sqrtf(matrixF[2] * matrixF[2] + matrixF[3] * matrixF[3]) * (float)ofSign(matrixF[3]);
+//			
+//			arotation = glm::degrees( std::atan2f(matrixF[2],matrixF[3]) );
+//			if( scaleX < 0 && scaleY < 0 ){
+//				
+//			}else{
+//				arotation *= -1.0f;
+//			}
+			//        cout << " rotation is " << arotation << endl;
+//			std::cout << "matrix rotation is " << arotation << " ScaleX: " << scaleX << " scaleY: " << scaleY << " apos: " << apos << std::endl;
+			
+//			return true;
 		}
 	}
+	
+	
+	
     return false;
 }
 
