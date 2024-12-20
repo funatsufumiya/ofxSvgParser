@@ -110,6 +110,11 @@ ofNode Element::getNodeTransform() {
 
 #pragma mark - Image
 //--------------------------------------------------------------
+ofRectangle Image::getRectangle() {
+	return ofRectangle(pos.x, pos.y, getWidth(), getHeight());
+}
+
+//--------------------------------------------------------------
 void Image::draw() {
 	if( !bTryLoad ) {
 		img.load( getFilePath() );
@@ -127,6 +132,13 @@ void Image::draw() {
 			} ofPopMatrix();
 		}
 	}
+}
+
+//--------------------------------------------------------------
+glm::vec2 Image::getAnchorPointForPercent( float ax, float ay ) {
+	glm::vec2 ap = glm::vec2( width * ax * scale.x, height * ay * scale.y );
+	ap = glm::rotate(ap, glm::radians(rotation));
+	return ap;
 }
 
 #pragma mark - Text

@@ -65,6 +65,11 @@ public:
 		bUseShapeColor = ab;
 	}
 	
+	virtual ofPolyline getFirstPolyline() {
+		ofLogWarning(moduleName()) << __FUNCTION__ << " : Element " << getTypeAsString() << " does not have a path.";
+		return ofPolyline();
+	}
+	
 	
 };
 
@@ -87,7 +92,7 @@ public:
 	ofColor getFillColor() { return path.getFillColor(); }
 	ofColor getStrokeColor() { return path.getStrokeColor(); }
 	
-	ofPolyline getFirstPolyline() {
+	ofPolyline getFirstPolyline() override {
 		if( path.getOutline().size() > 0 ) {
 			return path.getOutline()[0];
 		}
@@ -103,24 +108,26 @@ public:
 	virtual SvgType getType() override {return TYPE_RECTANGLE;}
 	ofRectangle rectangle;
 	
-	float getWidth() { return rectangle.getWidth();}
-	float getHeight() { return rectangle.getHeight();}
+	float getWidth() { return rectangle.getWidth() * scale.x;}
+	float getHeight() { return rectangle.getHeight() * scale.y;}
 	
-	float getWidthScaled() { return rectangle.getWidth() * scale.x;}
-	float getHeightScaled() { return rectangle.getHeight() * scale.y;}
+//	float getWidthScaled() { return rectangle.getWidth() * scale.x;}
+//	float getHeightScaled() { return rectangle.getHeight() * scale.y;}
 };
 
 class Image : public Element {
 public:
 	virtual SvgType getType() override {return TYPE_IMAGE;}
 	
-	float getWidth() { return width;}
-	float getHeight() { return height;}
+	float getWidth() { return width * scale.x;}
+	float getHeight() { return height * scale.y;}
 	
-	float getWidthScaled() { return getWidth() * scale.x;}
-	float getHeightScaled() { return getHeight() * scale.y;}
+	ofRectangle getRectangle();
+//	float getWidthScaled() { return getWidth() * scale.x;}
+//	float getHeightScaled() { return getHeight() * scale.y;}
 	
 	virtual void draw() override;
+	glm::vec2 getAnchorPointForPercent( float ax, float ay );
 	
 	std::string getFilePath() { return filepath; }
 	

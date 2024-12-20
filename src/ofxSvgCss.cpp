@@ -10,6 +10,7 @@
 #include "ofLog.h"
 #include <regex>
 #include <map>
+#include <optional>
 
 using namespace ofx::svg;
 

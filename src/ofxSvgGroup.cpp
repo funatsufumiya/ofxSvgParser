@@ -75,62 +75,153 @@ shared_ptr<Element> Group::getElementForName( std::string aPath, bool bStrict ) 
     }
     
     shared_ptr<Element> temp;
-    getElementForNameRecursive( tsearches, temp, mChildren, bStrict );
+	_getElementForNameRecursive( tsearches, temp, mChildren, bStrict );
     return temp;
 }
 
 //--------------------------------------------------------------
-void Group::getElementForNameRecursive( vector< string >& aNamesToFind, shared_ptr<Element>& aTarget, vector< shared_ptr<Element> >& aElements, bool bStrict ) {
-    
-    for( std::size_t i = 0; i < aElements.size(); i++ ) {
-        bool bFound = false;
-        if(bStrict) {
-            if( aElements[i]->getName() == aNamesToFind[0] ) {
-                bFound = true;
-            }
-        } else {
-            if( ofIsStringInString( aElements[i]->getName(), aNamesToFind[0] )) {
-//                    cout << "Found--- " << aNamesToFind[0] << endl;
-                bFound = true;
-            }
-            
-            if (!bFound && aElements[i]->getType() == TYPE_TEXT) {
-                
-                if (aElements[i]->getName() == "No Name") {
-                    // the ids for text block in illustrator are weird,
-                    // so try to grab the name from the text contents //
-                    shared_ptr<Text> etext = std::dynamic_pointer_cast<Text>(aElements[i]);
-                    if (etext) {
-                        if (etext->textSpans.size()) {
+std::vector< std::shared_ptr<Element> > Group::getChildrenForName( const std::string& aname, bool bStrict ) {
+	std::vector< std::shared_ptr<Element> > relements;
+	for( auto& kid : mChildren ) {
+		if( bStrict ) {
+			if( kid->getName() == aname ) {
+				relements.push_back(kid);
+			}
+		} else {
+			if( ofIsStringInString( kid->getName(), aname )) {
+				relements.push_back(kid);
+			}
+		}
+	}
+	return relements;
+}
+
+//--------------------------------------------------------------
+void Group::_getElementForNameRecursive( vector<string>& aNamesToFind, shared_ptr<Element>& aTarget, vector< shared_ptr<Element> >& aElements, bool bStrict ) {
+	
+	if( aNamesToFind.size() < 1 ) {
+		return;
+	}
+	if(aTarget) {
+		return;
+	}
+	
+	bool bKeepGoing = false;
+	std::string nameToFind = aNamesToFind[0];
+	if( aNamesToFind.size() > 1 ) {
+		bKeepGoing = (aNamesToFind[0] == "*");
+		nameToFind = aNamesToFind[1];
+	}
+	for( std::size_t i = 0; i < aElements.size(); i++ ) {
+		bool bFound = false;
+		if(bStrict) {
+			if( aElements[i]->getName() == nameToFind ) {
+				bFound = true;
+			}
+		} else {
+//			std::cout << "Group::_getElementForNameRecursive: ele name: " << aElements[i]->getName() << " nameToFind: " << nameToFind << " keep going: " << bKeepGoing << std::endl;
+			if( ofIsStringInString( aElements[i]->getName(), nameToFind )) {
+				bFound = true;
+			}
+			
+			if (!bFound && aElements[i]->getType() == TYPE_TEXT) {
+				
+				if (aElements[i]->getName() == "No Name") {
+					// the ids for text block in illustrator are weird,
+					// so try to grab the name from the text contents //
+					auto etext = std::dynamic_pointer_cast<Text>(aElements[i]);
+					if (etext) {
+						if (etext->textSpans.size()) {
 //                            cout << "Searching for " << aNamesToFind[0] << " in " << etext->textSpans.front().text << endl;
-                            if(ofIsStringInString( etext->textSpans.front()->text, aNamesToFind[0] )) {
-                                bFound = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        if( bFound == true ) {
-            aNamesToFind.erase( aNamesToFind.begin() );
-            if( aNamesToFind.size() == 0 || aElements[i]->getType() != TYPE_GROUP ) {
-                bool bgood = false;
-                if( aElements[i] ) {
-                    bgood = true;
-                }
-//                cout << "going to return one of the elements " << aNamesToFind.size() << " good: " << bgood << " " << endl;
-                aTarget = aElements[i];
-                break;
-            } else {
-                if( aElements[i]->getType() == TYPE_GROUP ) {
-                    shared_ptr<Group> tgroup = std::dynamic_pointer_cast<Group>( aElements[i] );
-                    getElementForNameRecursive( aNamesToFind, aTarget, tgroup->mChildren, bStrict );
-                    break;
-                }
-            }
-        }
-    }
+							if(ofIsStringInString( etext->textSpans.front()->text, aNamesToFind[0] )) {
+								bFound = true;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if( bFound && !bKeepGoing ) {
+			if( !bKeepGoing && aNamesToFind.size() > 0 ) {
+				aNamesToFind.erase( aNamesToFind.begin() );
+			}
+			if(aNamesToFind.size() == 0 ) {
+				aTarget = aElements[i];
+				break;
+			} else {
+				if( aElements[i]->getType() == TYPE_GROUP ) {
+					auto tgroup = std::dynamic_pointer_cast<Group>( aElements[i] );
+					_getElementForNameRecursive( aNamesToFind, aTarget, tgroup->getChildren(), bStrict );
+					break;
+				}
+			}
+		}
+		
+		if( bKeepGoing ) {
+			if( bFound ) {
+//				std::cout << "Group::_getElementForNameRecursive: SETTING TARGET: " << aElements[i]->getName() << " keep going: " << bKeepGoing << std::endl;
+				aTarget = aElements[i];
+				break;
+			} else {
+				if( aElements[i]->getType() == TYPE_GROUP ) {
+//					std::cout << "Group::_getElementForNameRecursive: FOUND A GROUP, But still going: " << aElements[i]->getName() << " keep going: " << bKeepGoing << std::endl;
+					auto tgroup = std::dynamic_pointer_cast<Group>( aElements[i] );
+					_getElementForNameRecursive( aNamesToFind, aTarget, tgroup->getChildren(), bStrict );
+				}
+			}
+		}
+	}
+	
+//    for( std::size_t i = 0; i < aElements.size(); i++ ) {
+//        bool bFound = false;
+//        if(bStrict) {
+//            if( aElements[i]->getName() == aNamesToFind[0] ) {
+//                bFound = true;
+//            }
+//        } else {
+//            if( ofIsStringInString( aElements[i]->getName(), aNamesToFind[0] )) {
+////                    cout << "Found--- " << aNamesToFind[0] << endl;
+//                bFound = true;
+//            }
+//            
+//            if (!bFound && aElements[i]->getType() == TYPE_TEXT) {
+//                
+//                if (aElements[i]->getName() == "No Name") {
+//                    // the ids for text block in illustrator are weird,
+//                    // so try to grab the name from the text contents //
+//                    shared_ptr<Text> etext = std::dynamic_pointer_cast<Text>(aElements[i]);
+//                    if (etext) {
+//                        if (etext->textSpans.size()) {
+////                            cout << "Searching for " << aNamesToFind[0] << " in " << etext->textSpans.front().text << endl;
+//                            if(ofIsStringInString( etext->textSpans.front()->text, aNamesToFind[0] )) {
+//                                bFound = true;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        if( bFound == true ) {
+//            aNamesToFind.erase( aNamesToFind.begin() );
+//            if( aNamesToFind.size() == 0 || aElements[i]->getType() != TYPE_GROUP ) {
+//                bool bgood = false;
+//                if( aElements[i] ) {
+//                    bgood = true;
+//                }
+////                cout << "going to return one of the elements " << aNamesToFind.size() << " good: " << bgood << " " << endl;
+//                aTarget = aElements[i];
+//                break;
+//            } else {
+//                if( aElements[i]->getType() == TYPE_GROUP ) {
+//                    shared_ptr<Group> tgroup = std::dynamic_pointer_cast<Group>( aElements[i] );
+//                    getElementForNameRecursive( aNamesToFind, aTarget, tgroup->mChildren, bStrict );
+//                    break;
+//                }
+//            }
+//        }
+//    }
 }
 
 //--------------------------------------------------------------

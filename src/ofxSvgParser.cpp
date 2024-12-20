@@ -284,7 +284,7 @@ bool Parser::_addElementFromXmlNode( ofXml& tnode, vector< shared_ptr<Element> >
         if(ryAttr) ellipse->radiusY = ryAttr.getFloatValue();
 		
 		// make local so we can apply transform later in the function
-		ellipse->path.ellipse({0.f,0.f}, ellipse->radiusX, ellipse->radiusY );
+		ellipse->path.ellipse({0.f,0.f}, ellipse->radiusX * 2.0f, ellipse->radiusY * 2.0f );
 		
 		_applyStyleToPath( tnode, ellipse );
         
@@ -1329,13 +1329,13 @@ bool Parser::getTransformFromSvgMatrix( string aStr, glm::vec2& apos, float& sca
 			mat = glm::translate(glm::mat4(1.0f), glm::vec3(matrixF[4], matrixF[5], 0.0f));
 			
 			
-			arotation = glm::degrees( std::atan2f(matrixF[1],matrixF[0]) );
+			arotation = glm::degrees( atan2f(matrixF[1],matrixF[0]) );
 			if( arotation != 0.f ) {
 				mat = mat * glm::toMat4((const glm::quat&)glm::angleAxis(glm::radians(arotation), glm::vec3(0.f, 0.f, 1.f)));
 			}
 			
-			scaleX = std::sqrtf(matrixF[0] * matrixF[0] + matrixF[1] * matrixF[1]);
-			scaleY = std::sqrtf(matrixF[2] * matrixF[2] + matrixF[3] * matrixF[3]);
+			scaleX = glm::sqrt(matrixF[0] * matrixF[0] + matrixF[1] * matrixF[1]);
+			scaleY = glm::sqrt(matrixF[2] * matrixF[2] + matrixF[3] * matrixF[3]);
 			
 			mat = glm::scale(mat, glm::vec3(scaleX, scaleY, 1.f));
 			

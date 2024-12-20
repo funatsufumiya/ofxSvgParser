@@ -8,18 +8,66 @@
 #pragma once
 #include <unordered_map>
 #include "ofColor.h"
+#include "ofLog.h"
 
 namespace ofx::svg {
 class CssClass {
 public:
 	
+	// adding this Optional class since std::optional is not a part of all std:: distributions at the moment, looking at you gcc < 10
+	template<typename T>
+	class Optional {
+	public:
+		Optional() : hasValue(false) {}  // Default constructor, no value
+		Optional(const T& value) : hasValue(true), data(value) {}  // Construct with a value
+		Optional(T&& value) : hasValue(true), data(std::move(value)) {}  // Move constructor
+		
+		// Copy and move constructors
+		Optional(const Optional& other) = default;
+		Optional(Optional&& other) noexcept = default;
+		
+		// Assignment operators
+		Optional& operator=(const Optional& other) = default;
+		Optional& operator=(Optional&& other) noexcept = default;
+		
+		// Destructor
+		~Optional() = default;
+		
+		// Check if there's a value
+		bool has_value() const { return hasValue; }
+		
+		// Accessors for the value
+		T& value() {
+//			if (!hasValue) throw std::runtime_error("No value present");
+			if (!hasValue) {
+				ofLogError("ofx::svg::CssClass") << "No value present";
+			}
+			return data;
+		}
+		
+		const T& value() const {
+//			if (!hasValue) throw std::runtime_error("No value present");
+			if (!hasValue) {
+				ofLogError("ofx::svg::CssClass") << "No value present";
+			}
+			return data;
+		}
+		
+		// Reset to an empty state
+		void reset() { hasValue = false; }
+		
+	private:
+		bool hasValue;
+		T data;
+	};
+	
 	class Property {
 	public:
 		std::string srcString;
-		std::optional<float> fvalue;
-		std::optional<int> ivalue;
-		std::optional<std::string> svalue;
-		std::optional<ofColor> cvalue;
+		Optional<float> fvalue;
+		Optional<int> ivalue;
+		Optional<std::string> svalue;
+		Optional<ofColor> cvalue;
 		
 //		bool bInPixels = false;
 //		bool bHasHash = false;
