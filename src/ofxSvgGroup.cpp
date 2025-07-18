@@ -109,8 +109,10 @@ void Group::_getElementForNameRecursive( vector<string>& aNamesToFind, shared_pt
 	bool bKeepGoing = false;
 	std::string nameToFind = aNamesToFind[0];
 	if( aNamesToFind.size() > 1 ) {
-		bKeepGoing = (aNamesToFind[0] == "*");
-		nameToFind = aNamesToFind[1];
+		if(aNamesToFind[0] == "*") {
+			bKeepGoing = true;
+			nameToFind = aNamesToFind[1];
+		}
 	}
 	for( std::size_t i = 0; i < aElements.size(); i++ ) {
 		bool bFound = false;
