@@ -8,7 +8,6 @@
 #include "ofUtils.h"
 #include <regex>
 #include "ofGraphics.h"
-#include "boost/optional.hpp"
 
 using namespace ofx::svg;
 using std::string;
@@ -785,7 +784,7 @@ void Parser::_parsePath( ofXml& tnode, std::shared_ptr<Path> aSvgPath ) {
 		
 		bool bRelative = false;
 		std::vector<glm::vec3> npositions= {glm::vec3(0.f, 0.f, 0.f)};
-		boost::optional<ofPath::Command::Type> ctype;
+		CssClass::Optional<ofPath::Command::Type> ctype;
 		
 		// check if we are looking for a position
 		if( cchar == 'm' || cchar == 'M' ) {
@@ -861,7 +860,7 @@ void Parser::_parsePath( ofXml& tnode, std::shared_ptr<Path> aSvgPath ) {
 //			}
 		}
 		
-		if( ctype != boost::none ) {
+		if( ctype.has_value() ) {
 			
 //			for( auto& np : npositions ) {
 //				ofLogNotice(moduleName()) << cchar << " position: " << np;
