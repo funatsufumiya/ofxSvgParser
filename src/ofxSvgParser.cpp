@@ -784,7 +784,7 @@ void Parser::_parsePath( ofXml& tnode, std::shared_ptr<Path> aSvgPath ) {
 		
 		bool bRelative = false;
 		std::vector<glm::vec3> npositions= {glm::vec3(0.f, 0.f, 0.f)};
-		std::optional<ofPath::Command::Type> ctype;
+		CssClass::Optional<ofPath::Command::Type> ctype;
 		
 		// check if we are looking for a position
 		if( cchar == 'm' || cchar == 'M' ) {
