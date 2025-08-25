@@ -8,6 +8,7 @@
 #include "ofUtils.h"
 #include <regex>
 #include "ofGraphics.h"
+#include "boost/optional.hpp"
 
 using namespace ofx::svg;
 using std::string;
@@ -27,7 +28,7 @@ bool Parser::load( of::filesystem::path aPathToSvg ) {
     ofFile mainXmlFile( aPathToSvg, ofFile::ReadOnly );
     ofBuffer tMainXmlBuffer( mainXmlFile );
     
-    svgPath     = aPathToSvg;
+    svgPath     = aPathToSvg.string();
     folderPath  = ofFilePath::getEnclosingDirectory( aPathToSvg, false );
     
     ofXml xml;
@@ -784,7 +785,7 @@ void Parser::_parsePath( ofXml& tnode, std::shared_ptr<Path> aSvgPath ) {
 		
 		bool bRelative = false;
 		std::vector<glm::vec3> npositions= {glm::vec3(0.f, 0.f, 0.f)};
-		std::optional<ofPath::Command::Type> ctype;
+		boost::optional<ofPath::Command::Type> ctype;
 		
 		// check if we are looking for a position
 		if( cchar == 'm' || cchar == 'M' ) {
@@ -860,7 +861,7 @@ void Parser::_parsePath( ofXml& tnode, std::shared_ptr<Path> aSvgPath ) {
 //			}
 		}
 		
-		if( ctype.has_value() ) {
+		if( ctype != boost::none ) {
 			
 //			for( auto& np : npositions ) {
 //				ofLogNotice(moduleName()) << cchar << " position: " << np;
